@@ -1,0 +1,101 @@
+<div class="dashboard">
+  <header>
+    <h1>💰 Expense Tracker</h1>
+    <div class="user-info">
+      <span>Welcome, {{ fullName }}</span>
+      <button (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Month Navigation -->
+  <div class="month-nav">
+    <button class="btn-nav" (click)="prevMonth()">&#8249;</button>
+    <span class="month-label">{{ monthLabel }}</span>
+    <button class="btn-nav" (click)="nextMonth()" [disabled]="isCurrentMonth">&#8250;</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    Loading...
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards" *ngIf="!isLoading">
+    <div class="card income">
+      <h3>Total Income</h3>
+      <p>₹{{ (summary?.totalIncome || 0) | number }}</p>
+    </div>
+    <div class="card expense">
+      <h3>Total Expense</h3>
+      <p>₹{{ (summary?.totalExpense || 0) | number }}</p>
+    </div>
+    <div class="card balance">
+      <h3>Balance</h3>
+      <p>₹{{ (summary?.balance || 0) | number }}</p>
+    </div>
+  </div>
+
+  <!-- Add Transaction Form (current month only) -->
+  <div class="add-transaction" *ngIf="showForm && isCurrentMonth">
+    <div class="form-card">
+      <h3>Add Transaction</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newTransaction.categoryId">
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c.categoryId">
+              {{ c.name }} ({{ c.type }})
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <input type="number" [(ngModel)]="newTransaction.amount" placeholder="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="newTransaction.transactionDate" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="newTransaction.description" placeholder="Optional" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" (click)="showForm = false">Cancel</button>
+        <button class="btn-save" (click)="addTransaction()">Save Transaction</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="transactions">
+    <div class="transactions-header">
+      <h2>Transactions</h2>
+      <button class="btn-add" (click)="showForm = !showForm" *ngIf="isCurrentMonth">
+        {{ showForm ? 'Close' : '+ Add Transaction' }}
+      </button>
+    </div>
+
+    <div *ngIf="transactions.length === 0 && !isLoading" class="empty">
+      No transactions for {{ monthLabel }}.
+    </div>
+
+    <div class="transaction-item" *ngFor="let t of transactions">
+      <div class="transaction-info">
+        <span class="category">{{ t.categoryName }}</span>
+        <span class="description">{{ t.description }}</span>
+        <span class="tx-date">{{ t.transactionDate | date:'dd MMM' }}</span>
+      </div>
+      <div class="transaction-right">
+        <span class="amount" [class.income]="t.categoryType === 'Income'"
+              [class.expense]="t.categoryType === 'Expense'">
+          {{ t.categoryType === 'Income' ? '+' : '-' }}₹{{ t.amount | number }}
+        </span>
+        <button class="btn-delete" (click)="deleteTransaction(t.transactionId)" *ngIf="isCurrentMonth">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
